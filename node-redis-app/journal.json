@@ -1,0 +1,129 @@
+{
+  "chaoslib-version": "1.44.0",
+  "platform": "Windows-11-10.0.26100-SP0",
+  "node": "pe-de-caqui-v2",
+  "experiment": {
+    "version": "1.0.0",
+    "title": "Teste simples de falha no Redis",
+    "description": "Simula indisponibilidade do Redis e observa se o sistema continua funcional.",
+    "tags": [
+      "redis",
+      "chaos",
+      "docker"
+    ],
+    "steady-state-hypothesis": {
+      "title": "Aplicação está saudável",
+      "probes": [
+        {
+          "type": "probe",
+          "name": "verifica_servico_aplicacao",
+          "tolerance": 200,
+          "provider": {
+            "type": "http",
+            "timeout": 3,
+            "url": "http://localhost:3000/health",
+            "method": "GET"
+          }
+        }
+      ]
+    },
+    "method": [
+      {
+        "type": "action",
+        "name": "parar_container_redis",
+        "provider": {
+          "type": "process",
+          "path": "docker.exe",
+          "arguments": "stop redis"
+        }
+      },
+      {
+        "type": "probe",
+        "name": "verifica_servico_aplicacao_apos_falha",
+        "tolerance": 200,
+        "provider": {
+          "type": "http",
+          "timeout": 3,
+          "url": "http://localhost:3000/health",
+          "method": "GET"
+        }
+      },
+      {
+        "type": "action",
+        "name": "iniciar_container_redis",
+        "provider": {
+          "type": "process",
+          "path": "docker.exe",
+          "arguments": "start redis"
+        }
+      }
+    ],
+    "rollbacks": [],
+    "dry": null
+  },
+  "start": "2025-04-27T01:24:55.438524+00:00",
+  "status": "failed",
+  "deviated": false,
+  "steady_states": {
+    "before": {
+      "steady_state_met": false,
+      "probes": [
+        {
+          "activity": {
+            "type": "probe",
+            "name": "verifica_servico_aplicacao",
+            "tolerance": 200,
+            "provider": {
+              "type": "http",
+              "timeout": 3,
+              "url": "http://localhost:3000/health",
+              "method": "GET"
+            }
+          },
+          "output": null,
+          "start": "2025-04-27T01:24:55.439328+00:00",
+          "status": "failed",
+          "exception": [
+            "Traceback (most recent call last):\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connectionpool.py\", line 534, in _make_request\n    response = conn.getresponse()\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connection.py\", line 516, in getresponse\n    httplib_response = super().getresponse()\n",
+            "  File \"C:\\Python313\\Lib\\http\\client.py\", line 1430, in getresponse\n    response.begin()\n    ~~~~~~~~~~~~~~^^\n",
+            "  File \"C:\\Python313\\Lib\\http\\client.py\", line 331, in begin\n    version, status, reason = self._read_status()\n                              ~~~~~~~~~~~~~~~~~^^\n",
+            "  File \"C:\\Python313\\Lib\\http\\client.py\", line 292, in _read_status\n    line = str(self.fp.readline(_MAXLINE + 1), \"iso-8859-1\")\n               ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^\n",
+            "  File \"C:\\Python313\\Lib\\socket.py\", line 719, in readinto\n    return self._sock.recv_into(b)\n           ~~~~~~~~~~~~~~~~~~~~^^^\n",
+            "TimeoutError: timed out\n",
+            "\nThe above exception was the direct cause of the following exception:\n\n",
+            "Traceback (most recent call last):\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\requests\\adapters.py\", line 667, in send\n    resp = conn.urlopen(\n        method=request.method,\n    ...<9 lines>...\n        chunked=chunked,\n    )\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connectionpool.py\", line 841, in urlopen\n    retries = retries.increment(\n        method, url, error=new_e, _pool=self, _stacktrace=sys.exc_info()[2]\n    )\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\util\\retry.py\", line 474, in increment\n    raise reraise(type(error), error, _stacktrace)\n          ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\util\\util.py\", line 39, in reraise\n    raise value\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connectionpool.py\", line 787, in urlopen\n    response = self._make_request(\n        conn,\n    ...<10 lines>...\n        **response_kw,\n    )\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connectionpool.py\", line 536, in _make_request\n    self._raise_timeout(err=e, url=url, timeout_value=read_timeout)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\urllib3\\connectionpool.py\", line 367, in _raise_timeout\n    raise ReadTimeoutError(\n        self, url, f\"Read timed out. (read timeout={timeout_value})\"\n    ) from err\n",
+            "urllib3.exceptions.ReadTimeoutError: HTTPConnectionPool(host='localhost', port=3000): Read timed out. (read timeout=3)\n",
+            "\nDuring handling of the above exception, another exception occurred:\n\n",
+            "Traceback (most recent call last):\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\chaoslib\\provider\\http.py\", line 51, in run_http_activity\n    r = s.get(\n        url,\n    ...<3 lines>...\n        verify=verify_tls,\n    )\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\requests\\sessions.py\", line 602, in get\n    return self.request(\"GET\", url, **kwargs)\n           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\requests\\sessions.py\", line 589, in request\n    resp = self.send(prep, **send_kwargs)\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\requests\\sessions.py\", line 703, in send\n    r = adapter.send(request, **kwargs)\n",
+            "  File \"C:\\Users\\Eduar\\AppData\\Roaming\\Python\\Python313\\site-packages\\requests\\adapters.py\", line 713, in send\n    raise ReadTimeout(e, request=request)\n",
+            "requests.exceptions.ReadTimeout: HTTPConnectionPool(host='localhost', port=3000): Read timed out. (read timeout=3)\n",
+            "\nDuring handling of the above exception, another exception occurred:\n\n",
+            "chaoslib.exceptions.ActivityFailed: activity took too long to complete\n"
+          ],
+          "end": "2025-04-27T01:24:58.474836+00:00",
+          "duration": 3.035508,
+          "tolerance_met": false
+        }
+      ]
+    },
+    "after": null,
+    "during": []
+  },
+  "run": [],
+  "rollbacks": [],
+  "end": "2025-04-27T01:24:58.475244+00:00",
+  "duration": 3.036738395690918
+}
